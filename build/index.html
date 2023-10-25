@@ -1,0 +1,61 @@
+<div
+  class="bg-light d-flex flex-column justify-content-center align-items-center position-absolute top-0 start-0 bottom-0 end-0">
+  <div style="max-width: 400px; width: 100%">
+    <div class="card shadow mb-5">
+      <div class="card-body p-5 d-flex flex-column">
+        <img
+          class="align-self-center mb-5"
+          src="{{global.variables.companyLogo}}"
+          alt="{{global.variables.companyName}}"
+          style="height: 65px; width: 65px" />
+        <h1 class="text-center mb-4">
+          Passwordless Flow Pack for Customer Identities
+        </h1>
+        <div
+          data-skcomponent="skerror"
+          class="feedback feedback--error sk-alert sk-alert-danger has-text-danger has-background-danger-light"
+          data-id="feedback"
+          data-skvisibility=""></div>
+        <div class="d-flex flex-column">
+          <a
+            id="goToDocsLink"
+            name="goToDocsLink"
+            data-id="goToDocsLink"
+            class="text-start text-muted"
+            href="https://docs.pingidentity.com/r/en-us/pingone_for_customers_passwordless/ciam_passwordless_configuring_flows_in_davinci"
+            >After downloading, visit the documentation to get started.
+          </a>
+        </div>
+
+        <form
+          id="sendToMarketplaceForm"
+          name="sendToMarketplaceForm"
+          method="get"
+          action="https://support.pingidentity.com/s/marketplace-integration/a7iDo0000010xwlIAA/passwordless-flow-pack-customer-identities"
+          formnovalidate
+          formtarget="_self">
+          <div class="d-flex flex-column">
+            <button
+              id="dlBtn"
+              name="dlBtn"
+              data-id="dlBtn"
+              type="button"
+              class="btn btn-primary mb-3"
+              autofocus>
+              Download
+            </button>
+            <button
+              id="marketplaceBtn"
+              name="marketplaceBtn"
+              data-id="marketplaceBtn"
+              type="submit"
+              class="btn btn-primary mb-3"
+              form="sendToMarketplaceForm">
+              Back to Marketplace
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
