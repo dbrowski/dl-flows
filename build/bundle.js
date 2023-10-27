@@ -40,8 +40,6 @@
     1: [
       function (require, module, exports) {
         // import zip from "jszip";
-        const jsZip = require("jszip");
-
         /**
          * The function `downloadFlowJSONFromGH` downloads a flow JSON file from a
          * GitHub URL, decodes it from base64, and triggers a file download.
@@ -51,45 +49,129 @@
           const debug = "{{global.variables.debug}}";
           // const debug = debugflowInstVar ? debugflowInstVar : false;
 
-          // GH URL of the flow json file
-          const ghFlowJSONURL = calcGHURL();
-          if (debug === "true") {
-            console.log("ghFlowJSONURL:", ghFlowJSONURL);
-          }
-
-          if (!ghFlowJSONURL) {
-            console.error(
-              "Error: unrecognized flow-short-name parameter. Don't know which flow to download."
-            );
-          }
-          // Make a request to GH to get the file contents
-          const ghFlowJSONRes = await fetch(ghFlowJSONURL, {
-            headers: {
-              // "Content-Type": "application/json",
-              "Content-Type": "application/vnd.github.raw",
-            },
-          });
-          if (debug === "true") {
-            console.log("ghFlowJSONRes:", ghFlowJSONRes);
-          }
-          const flowJSON = await ghFlowJSONRes.json();
-          if (debug === "true") {
-            console.log("flowJSON:", flowJSON);
-          }
+          console.log("debug:", debug);
 
           try {
-            if (flowJSON) {
-              zip = new jsZip();
-              zip.generateAsync({ type: "blob" }).then((blob) => {
-                saveAs(blob, "hello.zip");
+            const JSZip = require("jszip");
+            const zip = new JSZip();
+
+            const blob = new Blob();
+            const flows = await dlFlows();
+
+            if (debug) {
+              console.log("flows:", flows.toString());
+            }
+
+            if (!flows) {
+              console.error("No go. No flows.");
+            }
+
+            const flowNames = Object.keys(flows);
+            for (const name of flowNames) {
+              const filename = name + ".json";
+
+              const strFlowJSON = parseThenStringifyJSON({
+                name,
+                flows,
+                filename,
+                debug,
               });
 
-              triggerFileDownload({ ghFlowJSONResBody: flowJSON, debug });
-            } else {
-              throw new Error("Could not download");
+              // add flow json file to zip
+              zip.file(filename, strFlowJSON);
             }
+
+            if (debug) {
+              // count the number of flows that are in the zip
+              let numFlowsZipped = 0;
+              zip.forEach(() => numFlowsZipped++);
+
+              console.log("number of flows zipped:", numFlowsZipped);
+            }
+
+            // trigger download of zip file
+            zip.generateAsync({ type: "blob" }).then(function (blob) {
+              saveAs(blob, filename + ".zip");
+            });
+
+            // triggerFileDownload({ ghFlowJSONResBody: flowJSON, debug });
           } catch (error) {
             console.error(error);
+          }
+        };
+
+        const parseThenStringifyJSON = ({ name, flows, filename, debug }) => {
+          try {
+            if (debug) {
+              console.log("parsing flow:", name);
+              console.log(flows[name]);
+            }
+
+            const parsedFlowJSON = JSON.parse(flows[name]);
+
+            if (debug) {
+              console.log("parsed:", name);
+              console.log(parsedFlowJSON);
+            }
+
+            const strFlowJSON = JSON.stringify(parsedFlowJSON, null, 2);
+
+            if (debug) {
+              console.log("flow name:", name);
+              console.log("filename", filename);
+              console.log("stringified flow JSON:", strFlowJSON);
+            }
+            return strFlowJSON;
+          } catch (error) {
+            throw new Error("Failed to parse or re-stringify flow json", {
+              cause: error,
+            });
+          }
+        };
+
+        const dlFlows = async () => {
+          try {
+            const pwlessRegAuthnURL =
+              "{{global.variables.pwless-reg-authn-url}}";
+            const deviceMgmtURL = "{{global.variables.device-mgmt-url}}";
+            const pwResetURL = "{{global.variables.pw-reset-url}}";
+            const profileMgmtURL = "{{global.variables.profile-mgmt-url}}";
+
+            // const urls = [];
+            // urls.push(pwlessRegAuthnURL);
+            // urls.push(deviceMgmtURL);
+            // urls.push(pwResetURL);
+            // urls.push(profileMgmtURL);
+
+            const urls = {
+              "OOTB - Passwordless - Registration, Authentication, & Account Recovery - Main Flow":
+                pwlessRegAuthnURL,
+              "OOTB_Device Management - Main Flow": deviceMgmtURL,
+              "OOTB_Password Reset - Main Flow": pwResetURL,
+              "OOTB_Basic Profile Management.json": profileMgmtURL,
+            };
+
+            const flowJSONs = {};
+
+            const flows = await Promise.all(
+              Object.keys(urls).map(async (name, i, arr) => {
+                const res = await fetch(urls[name]);
+                // const flowJSON = await res.json();
+                const flowJSON = await res.body;
+                console.log("dl gh flow file response body:", flowJSON);
+
+                flowJSONs[name] = flowJSON;
+              })
+            );
+
+            console.log("downloaded flows:", flows);
+            console.log("downloaded flowJSONs:", flowJSONs);
+
+            return flowJSONs;
+          } catch (error) {
+            throw new Error("Downloading flow json files from GH failed", {
+              cause: error,
+            });
           }
         };
 
@@ -2516,7 +2598,7 @@
           }).call(this);
         }).call(this, require("buffer").Buffer);
       },
-      { "base64-js": 2, "buffer": 3, "ieee754": 4 },
+      { "base64-js": 2, buffer: 3, ieee754: 4 },
     ],
     4: [
       function (require, module, exports) {
@@ -2994,7 +3076,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                           return new h("Inflate", {});
                         });
                     },
-                    { "./stream/GenericWorker": 28, "./utils": 32, "pako": 38 },
+                    { "./stream/GenericWorker": 28, "./utils": 32, pako: 38 },
                   ],
                   8: [
                     function (e, t, r) {
@@ -5046,7 +5128,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                       "./external": 6,
                       "./nodejsUtils": 14,
                       "./support": 30,
-                      "setimmediate": 54,
+                      setimmediate: 54,
                     },
                   ],
                   33: [
@@ -8808,9 +8890,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     function (e, t, r) {
                       "use strict";
                       t.exports = {
-                        "2": "need dictionary",
-                        "1": "stream end",
-                        "0": "",
+                        2: "need dictionary",
+                        1: "stream end",
+                        0: "",
                         "-1": "file error",
                         "-2": "stream error",
                         "-3": "data error",
@@ -9811,7 +9893,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           require("timers").clearImmediate
         );
       },
-      { "process/browser.js": 6, "timers": 7 },
+      { "process/browser.js": 6, timers: 7 },
     ],
   },
   {},

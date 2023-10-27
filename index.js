@@ -8,79 +8,129 @@ const downloadFlowJSONFromGH = async () => {
   const debug = "{{global.variables.debug}}";
   // const debug = debugflowInstVar ? debugflowInstVar : false;
 
-  const JSZip = require("jszip");
-  const zip = new JSZip();
-
-  const blob = new Blob();
-  const flows = await dlFlows();
-
-  if (debug) {
-    console.log("flows:", flows.toString());
-  }
-
-  if (!flows) {
-    console.error("No go. No flows.");
-  }
-
-  const flowNames = Object.keys(flows);
-  for (const name of flowNames) {
-    if (debug) {
-      console.log("flow name:", name);
-    }
-    archive.append(flows[name], { name: name + ".json" });
-    zip.generateAsync({ type: "blob" }).then(function (flows[name]) {
-      saveAs(flows[name], name + ".zip");
-    });
-  }
-
-  const arch = await archive.finalize();
-
-  if (debug) {
-    console.log("arch:", arch);
-  }
+  console.log("debug:", debug);
 
   try {
-    if (flowJSON) {
-      triggerFileDownload({ ghFlowJSONResBody: flowJSON, debug });
-    } else {
-      throw new Error("Could not download");
+    const JSZip = require("jszip");
+    const zip = new JSZip();
+
+    const blob = new Blob();
+    const flows = await dlFlows();
+
+    if (debug) {
+      console.log("flows:", flows.toString());
     }
+
+    if (!flows) {
+      console.error("No go. No flows.");
+    }
+
+    const flowNames = Object.keys(flows);
+    for (const name of flowNames) {
+      const filename = name + ".json";
+
+      const strFlowJSON = parseThenStringifyJSON({
+        name,
+        flows,
+        filename,
+        debug,
+      });
+
+      // add flow json file to zip
+      zip.file(filename, strFlowJSON);
+    }
+
+    if (debug) {
+      // count the number of flows that are in the zip
+      let numFlowsZipped = 0;
+      zip.forEach(() => numFlowsZipped++);
+
+      console.log("number of flows zipped:", numFlowsZipped);
+    }
+
+    // trigger download of zip file
+    zip.generateAsync({ type: "blob" }).then(function (blob) {
+      saveAs(blob, filename + ".zip");
+    });
+
+    // triggerFileDownload({ ghFlowJSONResBody: flowJSON, debug });
   } catch (error) {
     console.error(error);
   }
 };
 
+const parseThenStringifyJSON = ({ name, flows, filename, debug }) => {
+  try {
+    if (debug) {
+      console.log("parsing flow:", name);
+      console.log(flows[name]);
+    }
+
+    const parsedFlowJSON = JSON.parse(flows[name]);
+
+    if (debug) {
+      console.log("parsed:", name);
+      console.log(parsedFlowJSON);
+    }
+
+    const strFlowJSON = JSON.stringify(parsedFlowJSON, null, 2);
+
+    if (debug) {
+      console.log("flow name:", name);
+      console.log("filename", filename);
+      console.log("stringified flow JSON:", strFlowJSON);
+    }
+    return strFlowJSON;
+  } catch (error) {
+    throw new Error("Failed to parse or re-stringify flow json", {
+      cause: error,
+    });
+  }
+};
+
 const dlFlows = async () => {
-  const pwlessRegAuthnURL = "{{global.variables.pwless-reg-authn-url}}";
-  const deviceMgmtURL = "{{global.variables.device-mgmt-url}}";
-  const pwResetURL = "{{global.variables.pw-reset-url}}";
-  const profileMgmtURL = "{{global.variables.profile-mgmt-url}}";
+  try {
+    const pwlessRegAuthnURL = "{{global.variables.pwless-reg-authn-url}}";
+    const deviceMgmtURL = "{{global.variables.device-mgmt-url}}";
+    const pwResetURL = "{{global.variables.pw-reset-url}}";
+    const profileMgmtURL = "{{global.variables.profile-mgmt-url}}";
 
-  // const urls = [];
-  // urls.push(pwlessRegAuthnURL);
-  // urls.push(deviceMgmtURL);
-  // urls.push(pwResetURL);
-  // urls.push(profileMgmtURL);
+    // const urls = [];
+    // urls.push(pwlessRegAuthnURL);
+    // urls.push(deviceMgmtURL);
+    // urls.push(pwResetURL);
+    // urls.push(profileMgmtURL);
 
-  const urls = {
-    "OOTB - Passwordless - Registration, Authentication, & Account Recovery - Main Flow":
-      pwlessRegAuthnURL,
-    "OOTB_Device Management - Main Flow": deviceMgmtURL,
-    "OOTB_Password Reset - Main Flow": pwResetURL,
-    "OOTB_Basic Profile Management.json": profileMgmtURL,
-  };
+    const urls = {
+      "OOTB - Passwordless - Registration, Authentication, & Account Recovery - Main Flow":
+        pwlessRegAuthnURL,
+      "OOTB_Device Management - Main Flow": deviceMgmtURL,
+      "OOTB_Password Reset - Main Flow": pwResetURL,
+      "OOTB_Basic Profile Management.json": profileMgmtURL,
+    };
 
-  const flowJSONs = {};
+    const flowJSONs = {};
 
-  await Promise.all(
-    Object.keys(urls).map(async (name, i, arr) => {
-      const res = await fetch(urls[name]);
-      const flowJSON = await res.json();
-      flowJSONs[name] = flowJSON;
-    })
-  );
+    const flows = await Promise.all(
+      Object.keys(urls).map(async (name, i, arr) => {
+        const res = await fetch(urls[name]);
+        // const flowJSON = await res.json();
+        const flowJSON = await res.body;
+        console.log("dl gh flow file response body:", flowJSON);
 
-  return flowJSONs;
+        flowJSONs[name] = flowJSON;
+      })
+    );
+
+    console.log("downloaded flows:", flows);
+    console.log("downloaded flowJSONs:", flowJSONs);
+
+    return flowJSONs;
+  } catch (error) {
+    throw new Error("Downloading flow json files from GH failed", {
+      cause: error,
+    });
+  }
 };
 
 /**
