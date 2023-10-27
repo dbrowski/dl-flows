@@ -1,4 +1,6 @@
 // import zip from "jszip";
+const jsZip = require("jszip");
+
 /**
  * The function `downloadFlowJSONFromGH` downloads a flow JSON file from a
  * GitHub URL, decodes it from base64, and triggers a file download.
@@ -8,39 +10,39 @@ const downloadFlowJSONFromGH = async () => {
   const debug = "{{global.variables.debug}}";
   // const debug = debugflowInstVar ? debugflowInstVar : false;
 
-  const JSZip = require("jszip");
-  const zip = new JSZip();
-
-  const blob = new Blob();
-  const flows = await dlFlows();
-
-  if (debug) {
-    console.log("flows:", flows.toString());
+  // GH URL of the flow json file
+  const ghFlowJSONURL = calcGHURL();
+  if (debug === "true") {
+    console.log("ghFlowJSONURL:", ghFlowJSONURL);
   }
 
-  if (!flows) {
-    console.error("No go. No flows.");
+  if (!ghFlowJSONURL) {
+    console.error(
+      "Error: unrecognized flow-short-name parameter. Don't know which flow to download."
+    );
   }
-
-  const flowNames = Object.keys(flows);
-  for (const name of flowNames) {
-    if (debug) {
-      console.log("flow name:", name);
-    }
-    archive.append(flows[name], { name: name + ".json" });
-    zip.generateAsync({ type: "blob" }).then(function (flows[name]) {
-      saveAs(flows[name], name + ".zip");
-    });
+  // Make a request to GH to get the file contents
+  const ghFlowJSONRes = await fetch(ghFlowJSONURL, {
+    headers: {
+      // "Content-Type": "application/json",
+      "Content-Type": "application/vnd.github.raw",
+    },
+  });
+  if (debug === "true") {
+    console.log("ghFlowJSONRes:", ghFlowJSONRes);
   }
-
-  const arch = await archive.finalize();
-
-  if (debug) {
-    console.log("arch:", arch);
+  const flowJSON = await ghFlowJSONRes.json();
+  if (debug === "true") {
+    console.log("flowJSON:", flowJSON);
   }
 
   try {
     if (flowJSON) {
+      zip = new jsZip();
+      zip.generateAsync({ type: "blob" }).then((blob) => {
+        saveAs(blob, "hello.zip");
+      });
+
       triggerFileDownload({ ghFlowJSONResBody: flowJSON, debug });
     } else {
       throw new Error("Could not download");
@@ -48,39 +50,6 @@ const downloadFlowJSONFromGH = async () => {
   } catch (error) {
     console.error(error);
   }
-};
-
-const dlFlows = async () => {
-  const pwlessRegAuthnURL = "{{global.variables.pwless-reg-authn-url}}";
-  const deviceMgmtURL = "{{global.variables.device-mgmt-url}}";
-  const pwResetURL = "{{global.variables.pw-reset-url}}";
-  const profileMgmtURL = "{{global.variables.profile-mgmt-url}}";
-
-  // const urls = [];
-  // urls.push(pwlessRegAuthnURL);
-  // urls.push(deviceMgmtURL);
-  // urls.push(pwResetURL);
-  // urls.push(profileMgmtURL);
-
-  const urls = {
-    "OOTB - Passwordless - Registration, Authentication, & Account Recovery - Main Flow":
-      pwlessRegAuthnURL,
-    "OOTB_Device Management - Main Flow": deviceMgmtURL,
-    "OOTB_Password Reset - Main Flow": pwResetURL,
-    "OOTB_Basic Profile Management.json": profileMgmtURL,
-  };
-
-  const flowJSONs = {};
-
-  await Promise.all(
-    Object.keys(urls).map(async (name, i, arr) => {
-      const res = await fetch(urls[name]);
-      const flowJSON = await res.json();
-      flowJSONs[name] = flowJSON;
-    })
-  );
-
-  return flowJSONs;
 };
 
 /**

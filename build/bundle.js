@@ -40,7 +40,7 @@
     1: [
       function (require, module, exports) {
         // import zip from "jszip";
-        const zip = require("jszip");
+        const jsZip = require("jszip");
 
         /**
          * The function `downloadFlowJSONFromGH` downloads a flow JSON file from a
@@ -79,6 +79,7 @@
 
           try {
             if (flowJSON) {
+              zip = new jsZip();
               zip.generateAsync({ type: "blob" }).then((blob) => {
                 saveAs(blob, "hello.zip");
               });
