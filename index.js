@@ -15,7 +15,7 @@ const downloadFlowJSONFromGH = async () => {
     const zip = new JSZip();
 
     const blob = new Blob();
-    const flows = await dlFlows();
+    const flows = await dlFlows({ debug });
 
     if (debug) {
       console.log("flows:", flows.toString());
@@ -88,7 +88,7 @@ const parseThenStringifyJSON = ({ name, flows, filename, debug }) => {
   }
 };
 
-const dlFlows = async () => {
+const dlFlows = async ({ debug }) => {
   try {
     const pwlessRegAuthnURL = "{{global.variables.pwless-reg-authn-url}}";
     const deviceMgmtURL = "{{global.variables.device-mgmt-url}}";
@@ -113,12 +113,17 @@ const dlFlows = async () => {
 
     const flows = await Promise.all(
       Object.keys(urls).map(async (name, i, arr) => {
+        if (debug) {
+          console.log("downloading flow:", name);
+          console.log("downloading from url:", urls[name]);
+        }
         const res = await fetch(urls[name]);
-        // const flowJSON = await res.json();
-        const flowJSON = await res.body;
+        const flowJSON = await res.json();
+        // const flowJSON = await res.body;
         console.log("dl gh flow file response body:", flowJSON);
 
         flowJSONs[name] = flowJSON;
+        return flowJSON;
       })
     );
 
