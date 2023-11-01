@@ -95,7 +95,7 @@ const dlFlows = async ({ debug }) => {
     const profileMgmtURL = "{{global.variables.prof-mgmt-url}}";
 
     const urls = {
-      "OOTB - Passwordless - Registration, Authentication, & Account Recovery - Main Flow":
+      "OOTB_Passwordless - Registration, Authentication, & Account Recovery - Main Flow":
         pwlessRegAuthnURL,
       "OOTB_Device Management - Main Flow": deviceMgmtURL,
       "OOTB_Password Reset - Main Flow": pwResetURL,
@@ -110,13 +110,17 @@ const dlFlows = async ({ debug }) => {
         try {
           if (debug) {
             console.log("urls:", arr.toString());
-            console.log("downloading flow:", name);
-            console.log("downloading from url:", urls[name]);
+            console.log("fetching flow:", name);
+            console.log("fetching from url:", urls[name]);
           }
 
           // Fetch flow json from GH and get body as json
           const res = await fetch(urls[name]);
           const flowJSON = await res.json();
+
+          if (debug) {
+            console.log("response body:", flowJSON);
+          }
 
           // Add this flow json
           flowJSONs[name] = flowJSON;
