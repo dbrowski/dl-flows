@@ -1,5 +1,6 @@
 <div
-  class="bg-light d-flex flex-column justify-content-center align-items-center position-absolute top-0 start-0 bottom-0 end-0">
+  class="bg-light d-flex flex-column justify-content-center align-items-center position-absolute top-0 start-0 bottom-0 end-0"
+>
   <div style="max-width: 400px; width: 100%">
     <div class="card shadow mb-5">
       <div class="card-body p-5 d-flex flex-column">
@@ -7,7 +8,8 @@
           class="align-self-center mb-5"
           src="{{global.variables.companyLogo}}"
           alt="{{global.variables.companyName}}"
-          style="height: 65px; width: 65px" />
+          style="height: 65px; width: 65px"
+        />
         <h1 class="text-center mb-4">
           Passwordless Flow Pack (Customer Identities)
         </h1>
@@ -15,25 +17,16 @@
           data-skcomponent="skerror"
           class="feedback feedback--error sk-alert sk-alert-danger has-text-danger has-background-danger-light"
           data-id="feedback"
-          data-skvisibility=""></div>
-        <div class="d-flex flex-column">
-          <a
-            id="goToDocsLink"
-            name="goToDocsLink"
-            data-id="goToDocsLink"
-            class="text-start text-muted"
-            href="https://docs.pingidentity.com/r/en-us/pingone_for_customers_passwordless/ciam_passwordless_configuring_flows_in_davinci"
-            >After downloading, visit the documentation to get started.
-          </a>
-        </div>
-
+          data-skvisibility=""
+        ></div>
         <form
-          id="sendToMarketplaceForm"
-          name="sendToMarketplaceForm"
+          id="goToDocsForm"
+          name="goToDocsForm"
           method="get"
-          action="https://support.pingidentity.com/s/marketplace-integration/a7iDo0000010xwlIAA/passwordless-flow-pack-customer-identities"
+          action="https://docs.pingidentity.com/r/en-us/pingone_for_customers_passwordless/ciam_passwordless_configuring_flows_in_davinci"
           formnovalidate
-          formtarget="_self">
+          formtarget="_self"
+        >
           <div class="d-flex flex-column">
             <button
               id="dlBtn"
@@ -41,20 +34,40 @@
               data-id="dlBtn"
               type="button"
               class="btn btn-primary mb-3"
-              autofocus>
+              autofocus
+            >
               Download
             </button>
             <button
-              id="marketplaceBtn"
-              name="marketplaceBtn"
-              data-id="marketplaceBtn"
+              id="goToDocsBtn"
+              name="goToDocsBtn"
+              data-id="goToDocsBtn"
               type="submit"
               class="btn btn-primary mb-3"
-              form="sendToMarketplaceForm">
-              Back to Marketplace
+              form="goToDocsForm"
+            >
+              Go to Documentation
+            </button>
+            <button
+              id="goToMarketplaceBtn"
+              name="goToMarketplaceBtn"
+              data-id="goToMarketplaceBtn"
+              type="submit"
+              class="btn btn-link"
+              form="goToMarketplaceForm"
+            >
+              Back to Integration Page
             </button>
           </div>
         </form>
+        <form
+          id="goToMarketplaceForm"
+          name="goToMarketplaceForm"
+          method="get"
+          action="https://support.pingidentity.com/s/marketplace-integration/a7iDo0000010xwlIAA/passwordless-flow-pack-customer-identities"
+          formnovalidate
+          formtarget="_self"
+        ></form>
       </div>
     </div>
   </div>

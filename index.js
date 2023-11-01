@@ -109,13 +109,17 @@ const dlFlows = async ({ debug }) => {
         try {
           if (debug) {
             console.log("urls:", arr.toString());
-            console.log("downloading flow:", name);
-            console.log("downloading from url:", urls[name]);
+            console.log("fetching flow:", name);
+            console.log("fetching from url:", urls[name]);
           }
 
           // Fetch flow json from GH and get body as json
           const res = await fetch(urls[name]);
           const flowJSON = await res.json();
+
+          if (debug) {
+            console.log("response body:", flowJSON);
+          }
 
           // Add this flow json
           flowJSONs[name] = flowJSON;
